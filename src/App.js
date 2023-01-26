@@ -25,6 +25,15 @@ function App() {
   const [mTreeRoot, setMTreeRoot] = useState("");
   const [mTreeEntries, setMTreeEntries] = useState([]);
 
+  const [mTreeBytesPubKeys, setMTreeBytesPubKeys] = useState("");
+  const [mTreeBytesBalance, setMTreeBytesBalance] = useState("");
+  const [mTreeBytesTokenId, setMTreeBytesTokenId] = useState("");
+  const [mTreeByte, setMTreeByte] = useState({});
+  const [mTreeByteRoot, setMTreeByteRoot] = useState("");
+  const [mTreeBytesValues, setMTreeBytesValues] = useState([]);
+  const [mTreeBytesEntries, setMTreeBytesEntries] = useState([]);
+  const [trees, setTrees] = useState([]);
+
   const connectMetaMask = async () => {
     // A Web3Provider wraps a standard Web3 provider, which is
     // what MetaMask injects as window.ethereum into each page
@@ -170,9 +179,6 @@ function App() {
 
   return (
     <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-          </header>
           <div>
             <Collapse defaultActiveKey={['1']} onChange={onChangeCollapse}>
               <Panel header="Wallet and Eth Chain" key="1">
@@ -221,7 +227,7 @@ function App() {
                   }
                 </p>
               </Panel>
-              <Panel header="openzeppelin / merkel tree" key="2">
+              <Panel header="openzeppelin / merkel tree (address, amount)" key="2">
                   {
                     mTreeValues && mTreeValues.length ? JSON.stringify(mTreeValues) : ""
                   }
@@ -286,7 +292,121 @@ function App() {
                     setMTree({});
                     setMTreeRoot("");
                     setMTreeEntries([]);
+                    const testArr = [
+                      [
+                        "0x90e8c1460fdb55b944ad4b9ec73275c2ef701311715d6f8766a02d0b0b8f37a21c871fdc9784276ec74515e7a219cbcf",
+                        "32000000000000000000",
+                        "0"
+                      ]
+                    ]
+                    // const testTree = StandardMerkleTree.of(testArr, ["bytes", "uint128", "uint256"])
+                    // console.log(testTree)
+                    // const root = testTree.root;
+                    // console.log(root)
+                    // const proof = testTree.getProof(0);
+                    // console.log(proof)
                   }}>Clear Tree</Button>
+              </Panel>
+              <Panel header="openzeppelin / merkel tree (['bytes' (pubkey), 'uint128' (balance), 'uint256' (tokenId)])" key="3">
+                  {
+                    mTreeBytesValues && mTreeBytesValues.length ? JSON.stringify(mTreeBytesValues) : ""
+                  }
+                  <br/>
+                  <Input 
+                    onChange={(e) => {
+                      setMTreeBytesPubKeys(e.target.value);
+                    }}
+                    value={mTreeBytesPubKeys}
+                    placeholder="PubKeys e.g. 0x90e8c1460fdb55b944ad4b9ec73275c2ef701311715d6f8766a02d0b0b8f37a21c871fdc9784276ec74515e7a219cbcf" 
+                  />
+                  <br/>
+                  <br/>
+                  <Input 
+                    onChange={(e) => {
+                      setMTreeBytesBalance(e.target.value);
+                    }}
+                    value={mTreeBytesBalance}
+                    placeholder="Balance e.g. 300" 
+                  />
+                  <br/>
+                  <br/>
+                  <Input 
+                    onChange={(e) => {
+                      setMTreeBytesTokenId(e.target.value);
+                    }}
+                    value={mTreeBytesTokenId}
+                    placeholder="TokenId e.g. 0 or 1 or 2 etc" 
+                  />
+                  <br/>
+                  <br/>
+                  <div>
+                    {mTreeByteRoot &&  <b>{`Merkel Tree Root : ${mTreeByteRoot}`}</b>}
+                  </div>
+                  <div>
+                    {
+                      <ReactJson src={mTree} />
+                    }
+                  </div>
+                  <div>
+                    {
+                      mTreeBytesEntries && mTreeBytesEntries.length && <b>Merkel Tree Entries:</b>
+                    }
+                    {
+                      mTreeBytesEntries && mTreeBytesEntries.length && <ReactJson src={mTreeBytesEntries} />
+                    }
+                  </div>
+                  <Button type="primary" onClick={() => {
+                    const newmTreeBytesValues = [...mTreeBytesValues ,[mTreeBytesPubKeys, mTreeBytesBalance, mTreeBytesTokenId ] ]
+                    setMTreeBytesValues(newmTreeBytesValues);
+                  }}>Add to Values</Button>&nbsp;&nbsp;
+                  <Button type="primary" onClick={() => {
+                    console.log("mTreeBytesValues: \n", mTreeBytesValues)
+                    mTreeBytesValues.sort((a, b) => a[2] - b[2]);
+                    console.log("mTreeBytesValues: \n", mTreeBytesValues)
+                    let tree = StandardMerkleTree.of(mTreeBytesValues, ['bytes', 'uint128', 'uint256']);
+                    setMTreeByte(tree);
+                    console.log("root:", tree.root)
+                    setMTreeByteRoot(tree.root);
+                    // setMTreeRoot(tree.root)
+                    // setMTree(tree.dump())
+                    const tempTempEntries = []
+                    console.log(tree);
+                    console.log(tree.dump());
+                    for (const [i, v] of tree.entries()) {
+                        const proof = tree.getProof(i);
+                        console.log("v: \n",v)
+                        // const leaf = tree.leafHash([v[0], ''])
+                        const entry = {
+                          entry: i,
+                          value: v,
+                          proof: proof,
+                        }
+                        tempTempEntries.push(entry)
+                    }
+                    setMTreeBytesEntries(tempTempEntries)
+                    console.log(tree.render());
+                  }}>Generate Tree</Button>&nbsp;&nbsp;<Button type="primary" onClick={() => {
+                    setMTreeBytesValues([]);
+                    setMTreeByte({});
+                    setMTreeByteRoot("");
+                    setMTreeBytesEntries([]);
+                    // const testArr = [
+                    //   [
+                    //     "0x90e8c1460fdb55b944ad4b9ec73275c2ef701311715d6f8766a02d0b0b8f37a21c871fdc9784276ec74515e7a219cbcf",
+                    //     "32000000000000000000",
+                    //     "0"
+                    //   ]
+                    // ]
+                    // const testTree = StandardMerkleTree.of(testArr, ["bytes", "uint128", "uint256"])
+                    // console.log(testTree)
+                    // const root = testTree.root;
+                    // console.log(root)
+                    // const proof = testTree.getProof(0);
+                    // console.log(proof)
+                  }}>Clear Tree</Button>&nbsp;&nbsp;<Button type="primary" onClick={() => {
+                    let currentTrees = [...trees, mTreeByte]
+                    setTrees(currentTrees);
+                  }}>Save Tree</Button>
               </Panel>
             </Collapse>
           </div>
