@@ -8,6 +8,7 @@ import { StandardMerkleTree } from "@openzeppelin/merkle-tree";
 import ReactJson from 'react-json-view'
 import fs from "fs";
 const { Panel } = Collapse;
+const { TextArea } = Input;
 
 function App() {
 
@@ -33,6 +34,7 @@ function App() {
   const [mTreeBytesValues, setMTreeBytesValues] = useState([]);
   const [mTreeBytesEntries, setMTreeBytesEntries] = useState([]);
   const [trees, setTrees] = useState([]);
+  const [treeDrawing, setTreeDrawing] = useState("");
 
   const connectMetaMask = async () => {
     // A Web3Provider wraps a standard Web3 provider, which is
@@ -254,6 +256,10 @@ function App() {
                     {mTreeRoot &&  <b>{`Merkel Tree Root : ${mTreeRoot}`}</b>}
                   </div>
                   <div>
+                    <b>{`Merkel Tree Drawing:`}</b>
+                    <TextArea rows={4} placeholder="Tree Branch Drawing" value={treeDrawing}/>
+                  </div>
+                  <div>
                     {
                       <ReactJson src={mTree} />
                     }
@@ -274,6 +280,8 @@ function App() {
                     let tree = StandardMerkleTree.of(mTreeValues, ["address", "uint256"]);
                     setMTreeRoot(tree.root)
                     setMTree(tree.dump())
+                    setTreeDrawing(tree.render())
+                    console.log(typeof tree.render())
                     const tempTempEntries = []
                     for (const [i, v] of tree.entries()) {
                         const proof = tree.getProof(i);
@@ -343,6 +351,10 @@ function App() {
                     {mTreeByteRoot &&  <b>{`Merkel Tree Root : ${mTreeByteRoot}`}</b>}
                   </div>
                   <div>
+                    <b>{`Merkel Tree Drawing:`}</b>
+                    <TextArea rows={4} placeholder="Tree Branch Drawing" value={treeDrawing}/>
+                  </div>
+                  <div>
                     {
                       <ReactJson src={mTree} />
                     }
@@ -384,7 +396,8 @@ function App() {
                         tempTempEntries.push(entry)
                     }
                     setMTreeBytesEntries(tempTempEntries)
-                    console.log(tree.render());
+                    setTreeDrawing(tree.render())
+                    console.log(typeof tree.render())
                   }}>Generate Tree</Button>&nbsp;&nbsp;<Button type="primary" onClick={() => {
                     setMTreeBytesValues([]);
                     setMTreeByte({});
