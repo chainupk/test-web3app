@@ -9,6 +9,8 @@ import ReactJson from 'react-json-view'
 import fs from "fs";
 const { Panel } = Collapse;
 const { TextArea } = Input;
+const Web3 = require("web3")
+const web3 = new Web3("https://cloudflare-eth.com")
 
 function App() {
 
@@ -35,6 +37,9 @@ function App() {
   const [mTreeBytesEntries, setMTreeBytesEntries] = useState([]);
   const [trees, setTrees] = useState([]);
   const [treeDrawing, setTreeDrawing] = useState("");
+  const [ERC20TransferABI, setERC20TransferABI] = useState("");
+  const [ERC20ContractAddress, setERC20ContractAddress] = useState("");
+  const [ERC20ContractResponse, setERC20ContractResponse] = useState({});
 
   const connectMetaMask = async () => {
     // A Web3Provider wraps a standard Web3 provider, which is
@@ -420,6 +425,48 @@ function App() {
                     let currentTrees = [...trees, mTreeByte]
                     setTrees(currentTrees);
                   }}>Save Tree</Button>
+              </Panel>
+              <Panel header="Ethereum Contract Execution" key="4">
+                <div>
+                  <TextArea rows={4} placeholder="Contract ABI" value={ERC20TransferABI} onChange={(e) => {
+                    setERC20TransferABI(e.target.value)
+                  }}/>
+                </div>
+                  <br/>
+                  <br/>
+                  <Input 
+                    onChange={(e) => {
+                      setERC20ContractAddress(e.target.value);
+                    }}
+                    value={ERC20ContractAddress}
+                    placeholder="ERC20 Contract Address" 
+                  />
+                <br/>
+                <br/>
+                  <Button type="primary" onClick={() => {
+                    const ethereumToken = new web3.eth.Contract(JSON.parse(ERC20TransferABI), ERC20ContractAddress);
+                    /*
+                      NOTE: Add your own contract function calls here
+                    */
+                    console.log("ethereumToken: ", ethereumToken);
+                    setERC20ContractResponse(ethereumToken)
+                    console.log("ethereumToken.methods : ", ethereumToken.methods);
+                    ethereumToken.methods.totalSupply().call((err, res) => {
+                      if (err) {
+                        console.log("An error occurred", err)
+                        return
+                      }
+                      console.log("The balance is: ", res)
+                    })
+                  }}>ERC20 token</Button>
+                <br/>
+                <br/>
+                <div>
+                  {'Response'}
+                </div>
+                <div>
+                  {/* {`${ERC20ContractResponse && JSON.stringify(ERC20ContractResponse)}`} */}
+                </div>
               </Panel>
             </Collapse>
           </div>
